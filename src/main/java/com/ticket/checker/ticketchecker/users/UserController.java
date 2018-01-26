@@ -97,6 +97,8 @@ public class UserController {
 		
 		String hashedUserPassword = SpringSecurityConfig.encoder().encode(password);
 		user.setPassword(hashedUserPassword);
+		user.setSoldTicketsNo(0);
+		user.setValidatedTicketsNo(0);
 		userRepository.save(user);
 		
 		return new ResponseEntity<Object>(HttpStatus.CREATED);

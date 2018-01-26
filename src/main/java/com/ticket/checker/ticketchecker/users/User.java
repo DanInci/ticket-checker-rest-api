@@ -31,10 +31,12 @@ public class User {
 	@OneToMany(mappedBy="soldBy", fetch=FetchType.LAZY)
 	@JsonIgnore
 	private List<Ticket> soldTickets;
+	private int soldTicketsNo;
 	
 	@OneToMany(mappedBy="validatedBy", fetch=FetchType.LAZY)
 	@JsonIgnore
 	private List<Ticket> validatedTickets;
+	private int validatedTicketsNo;
 	
 	public User() {}
 
@@ -45,7 +47,9 @@ public class User {
 		this.role = role;
 		this.createdDate = createdDate;
 		this.soldTickets = soldTickets;
+		this.soldTicketsNo = soldTickets.size();
 		this.validatedTickets = validatedTickets;
+		this.validatedTicketsNo = validatedTickets.size();
 	}
 
 	public Long getId() {
@@ -104,11 +108,27 @@ public class User {
 		return soldTickets;
 	}
 	
+	public void setSoldTicketsNo(int soldTicketsNo) {
+		this.soldTicketsNo = soldTicketsNo;
+	}
+	
+	public int getSoldTicketsNo() {
+		return soldTicketsNo;
+	}
+	
 	public void setValidatedTickets(List<Ticket> validatedTickets) {
 		this.validatedTickets = validatedTickets;
 	}
 	
 	public List<Ticket> getValidatedTickets() {
 		return validatedTickets;
+	}
+	
+	public void setValidatedTicketsNo(int validatedTicketsNo) {
+		this.validatedTicketsNo = validatedTicketsNo;
+	}
+	
+	public int getValidatedTicketsNo() {
+		return validatedTicketsNo;
 	}
 }

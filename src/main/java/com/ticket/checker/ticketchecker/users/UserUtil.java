@@ -34,5 +34,39 @@ public class UserUtil {
 			return null;
 		}
 	}
+	
+	public String getUsernameFromAuthorization(String authHeader) {
+		String[] auth = authHeader.split(" ");
+		try {
+			byte[] decoded = Base64.getDecoder().decode(auth[1]);
+			String decodedString = new String(decoded);
+			String[] user_pass = decodedString.split(":");
+			
+			String username = user_pass[0];
+			
+			Optional<User> optional = userRepository.findByUsername(username);
+			if(!optional.isPresent()) {
+				return "-";
+			}
+			else {
+				return optional.get().getUsername();
+			}
+		}
+		catch(ArrayIndexOutOfBoundsException e) {
+			return "-";
+		}
+	}
+	
+	public void incrementUserSoldTickets(User user) {
+		int soldTicketsNo = user.getSoldTicketsNo() + 1;
+		user.setSoldTicketsNo(soldTicketsNo);
+		userRepository.save(user);
+	}
+	
+	public void incrementUserValidatedTickets(User user) {
+		int validatedTicketsNo = user.getValidatedTicketsNo() + 1;
+		user.setValidatedTicketsNo(validatedTicketsNo);
+		userRepository.save(user);
+	}
 
 }

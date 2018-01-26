@@ -72,6 +72,8 @@ public class TicketController {
 		ticket.setValidatedBy(validatedBy);
 		ticket.setValidatedAt(new Date());
 		ticketRepository.save(ticket);
+		
+		userUtil.incrementUserValidatedTickets(validatedBy);
 	}
 	
 	@GetMapping("/tickets/{ticketId}")
@@ -96,7 +98,9 @@ public class TicketController {
 		}
 		ticket.setSoldAt(new Date());
 		ticket.setSoldBy(soldBy);
+
 		ticketRepository.save(ticket);
+		userUtil.incrementUserSoldTickets(soldBy);
 		
 		URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{ticketId}").buildAndExpand(ticket.getTicketId()).toUri();
 		

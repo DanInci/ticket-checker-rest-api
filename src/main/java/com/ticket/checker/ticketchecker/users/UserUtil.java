@@ -36,8 +36,8 @@ public class UserUtil {
 	}
 	
 	public String getUsernameFromAuthorization(String authHeader) {
-		String[] auth = authHeader.split(" ");
 		try {
+			String[] auth = authHeader.split(" ");
 			byte[] decoded = Base64.getDecoder().decode(auth[1]);
 			String decodedString = new String(decoded);
 			String[] user_pass = decodedString.split(":");
@@ -52,7 +52,7 @@ public class UserUtil {
 				return optional.get().getUsername();
 			}
 		}
-		catch(ArrayIndexOutOfBoundsException e) {
+		catch(Exception e) {
 			return "-";
 		}
 	}

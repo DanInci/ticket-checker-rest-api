@@ -58,7 +58,7 @@ public class TicketController {
 	}
 	
 	@GetMapping(path="/tickets",params="validate") 
-	public void validateTicketById(@RequestHeader("Authorization") String authorization, @RequestParam("validate") Long ticketId) {
+	public void validateTicketById(@RequestHeader("Authorization") String authorization, @RequestParam("validate") String ticketId) {
 		User validatedBy = userUtil.getUserFromAuthorization(authorization);
 		
 		Optional<Ticket> optional = ticketRepository.findById(ticketId);
@@ -77,7 +77,7 @@ public class TicketController {
 	}
 	
 	@GetMapping("/tickets/{ticketId}")
-	public MappingJacksonValue getTicketById(@PathVariable Long ticketId) {
+	public MappingJacksonValue getTicketById(@PathVariable String ticketId) {
 		Optional<Ticket> optional = ticketRepository.findById(ticketId);
 		if(!optional.isPresent()) {
 			throw new ResourceNotFoundException("Ticket " + ticketId + " was not found!");
@@ -88,10 +88,10 @@ public class TicketController {
 	}
 	
 	@PostMapping("/tickets")
-	public ResponseEntity<Ticket> createTicket(@RequestHeader("Authorization") String authorization, @RequestBody Ticket ticket) {
+	public void createTicket(@RequestHeader("Authorization") String authorization, @RequestBody Ticket ticket) {
 		User soldBy = userUtil.getUserFromAuthorization(authorization);
 		
-		Long ticketId = ticket.getTicketId();
+		String ticketId = ticket.getTicketId();
 		Optional<Ticket> optional = ticketRepository.findById(ticketId);
 		if(optional.isPresent()) {
 			throw new TicketExistsException("Ticket " + ticketId + " already exists!");
@@ -101,14 +101,10 @@ public class TicketController {
 
 		ticketRepository.save(ticket);
 		userUtil.incrementUserSoldTickets(soldBy);
-		
-		URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{ticketId}").buildAndExpand(ticket.getTicketId()).toUri();
-		
-		return ResponseEntity.created(location).build();
 	}
 	
 	@DeleteMapping(path="/tickets/{ticketId}")
-	public void deleteTicketById(@PathVariable Long ticketId) {
+	public void deleteTicketById(@PathVariable String ticketId) {
 		Optional<Ticket> optional = ticketRepository.findById(ticketId);
 		if(!optional.isPresent()) {
 			throw new ResourceNotFoundException("Ticket " + ticketId + " doesnt not exist!");

@@ -16,7 +16,7 @@ import com.ticket.checker.ticketchecker.users.User;
 public class Ticket {
 	
 	@Id
-	private Long ticketId;
+	private String ticketId;
 	
 	private String soldTo;
 	
@@ -33,7 +33,7 @@ public class Ticket {
 	
 	public Ticket() {}
 
-	public Ticket(Long ticketId, String soldTo, User soldBy, Date soldAt, User validatedBy, Date validatedAt) {
+	public Ticket(String ticketId, String soldTo, User soldBy, Date soldAt, User validatedBy, Date validatedAt) {
 		super();
 		this.ticketId = ticketId;
 		this.soldTo = soldTo;
@@ -43,11 +43,11 @@ public class Ticket {
 		this.validatedAt = validatedAt;
 	}
 
-	public Long getTicketId() {
+	public String getTicketId() {
 		return ticketId;
 	}
 
-	public void setTicketId(Long ticketId) {
+	public void setTicketId(String ticketId) {
 		this.ticketId = ticketId;
 	}
 	

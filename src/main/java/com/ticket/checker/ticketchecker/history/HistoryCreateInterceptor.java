@@ -27,6 +27,9 @@ public class HistoryCreateInterceptor extends HandlerInterceptorAdapter {
 		
 		String username = userUtil.getUsernameFromAuthorization(authorization);
 		String requestURI = request.getRequestURI();
+		if(requestURI.length()>255) {
+			requestURI = requestURI.substring(0, 250) + "[...]";
+		}
 		String requestMethod = request.getMethod();
 		int responseStatus = response.getStatus();
 		

@@ -5,6 +5,7 @@ import java.util.Date;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import javax.validation.constraints.Size;
 
 import com.fasterxml.jackson.annotation.JsonFilter;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -16,8 +17,10 @@ import com.ticket.checker.ticketchecker.users.User;
 public class Ticket {
 	
 	@Id
+	@Size(min=1, max=255, message="Ticked id must have at least 1 chars and as much as 255 chars")
 	private String ticketId;
 	
+	@Size(max=255, message="Sold to must have as much as 255 chars")
 	private String soldTo;
 	
 	@ManyToOne

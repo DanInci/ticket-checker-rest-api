@@ -46,11 +46,11 @@ public class TicketController {
 	@GetMapping(path="/tickets",params="validated")
 	public MappingJacksonValue getTicketsByValidation(@RequestParam("validated") boolean isValidated) {
 		List<Ticket> ticketList;
-		if(isValidated) {
-			ticketList = ticketRepository.findByValidatedAtIsNotNull();
+		if(!isValidated) {
+			ticketList = ticketRepository.findByValidatedAtIsNullOrderBySoldAtAsc();
 		}
 		else {
-			ticketList = ticketRepository.findByValidatedAtIsNull();
+			ticketList = ticketRepository.findByValidatedAtIsNotNullOrderByValidatedAtAsc();
 		}
 		MappingJacksonValue map = setTicketFilters(ticketList, true);
 		return map;
@@ -119,11 +119,11 @@ public class TicketController {
 	@GetMapping(path="/tickets/numbers",params="validated")
 	public Integer getTicketCount(@RequestParam("validated") boolean isValidated) {
 		if(isValidated) {
-			List<Ticket> validatedTickets = ticketRepository.findByValidatedAtIsNotNull();
+			List<Ticket> validatedTickets = ticketRepository.findByValidatedAtIsNullOrderBySoldAtAsc();
 			return validatedTickets.size();
 		}
 		else {
-			List<Ticket> notValidatedTickets = ticketRepository.findByValidatedAtIsNull();
+			List<Ticket> notValidatedTickets = ticketRepository.findByValidatedAtIsNotNullOrderByValidatedAtAsc();
 			return notValidatedTickets.size();
 		}
 	}

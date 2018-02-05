@@ -16,8 +16,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.ticket.checker.ticketchecker.exceptions.NotPermittedException;
 import com.ticket.checker.ticketchecker.exceptions.ResourceNotFoundException;
 import com.ticket.checker.ticketchecker.exceptions.UsernameExistsException;
 import com.ticket.checker.ticketchecker.security.SpringSecurityConfig;
@@ -45,6 +47,12 @@ public class UserController {
 	@GetMapping("/users")
 	public List<User> getAllUsers() {
 		return userRepository.findAll();
+	}
+	
+	@GetMapping(path="/users", params="role")
+	public List<User> getUsersByRole(@RequestParam("role") String role) {
+		List<User> users = userRepository.findByRoleOrderByCreatedDateAsc("ROLE_" + role.toUpperCase());
+		return users;
 	}
 	
 	@GetMapping("/users/{id}")
@@ -112,6 +120,9 @@ public class UserController {
 		}
 		
 		User user = optionalUser.get();
+		if(user.getRole().equals("ROLE_" + SpringSecurityConfig.ADMIN)) {
+			throw new NotPermittedException("You can not delete an "+SpringSecurityConfig.ADMIN+" account!");
+		}
 		userRepository.delete(user);
 	}
 	

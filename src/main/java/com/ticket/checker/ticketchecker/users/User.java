@@ -10,35 +10,40 @@ import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.validation.constraints.Size;
 
+import com.fasterxml.jackson.annotation.JsonFilter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.ticket.checker.ticketchecker.tickets.Ticket;
 
 @Entity
+@JsonFilter("UserFilter")
 public class User {
 	
 	@Id
 	@GeneratedValue
 	private Long id;
 	
-	@JsonIgnore
 	@Size(min=3,max=255, message="Username must have at least 3 chars and as much as 255 chars")
 	private String username;
-	@JsonIgnore
+	
 	private String password;
 	
 	@Size(max=255, message="Name must have as much as 255 chars")
 	private String name;
+	
 	private String role;
+	
 	private Date createdDate;
 	
 	@OneToMany(mappedBy="soldBy", fetch=FetchType.LAZY)
 	@JsonIgnore
 	private List<Ticket> soldTickets;
+	
 	private int soldTicketsNo;
 	
 	@OneToMany(mappedBy="validatedBy", fetch=FetchType.LAZY)
 	@JsonIgnore
 	private List<Ticket> validatedTickets;
+	
 	private int validatedTicketsNo;
 	
 	public User() {}

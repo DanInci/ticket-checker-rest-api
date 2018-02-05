@@ -19,6 +19,9 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fasterxml.jackson.databind.ser.FilterProvider;
+import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
+import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import com.ticket.checker.ticketchecker.exceptions.NotPermittedException;
 import com.ticket.checker.ticketchecker.exceptions.ResourceNotFoundException;
 import com.ticket.checker.ticketchecker.exceptions.UsernameExistsException;
@@ -40,29 +43,31 @@ public class UserController {
 	}
 	
 	@GetMapping("/login")
-	public User login(@RequestHeader("Authorization") String authorization) {
-		return util.getUserFromAuthorization(authorization);
+	public MappingJacksonValue login(@RequestHeader("Authorization") String authorization) {
+		User user = util.getUserFromAuthorization(authorization);
+		return setUserFilter(user);
 	}
 	
 	@GetMapping("/users")
-	public List<User> getAllUsers() {
-		return userRepository.findAll();
+	public MappingJacksonValue getAllUsers() {
+		List<User> users = userRepository.findAll();
+		return setUserFilter(users);
 	}
 	
 	@GetMapping(path="/users", params="role")
-	public List<User> getUsersByRole(@RequestParam("role") String role) {
+	public MappingJacksonValue getUsersByRole(@RequestParam("role") String role) {
 		List<User> users = userRepository.findByRoleOrderByCreatedDateAsc("ROLE_" + role.toUpperCase());
-		return users;
+		return setUserFilter(users);
 	}
 	
 	@GetMapping("/users/{id}")
-	public User getAllUsers(@PathVariable long id) {
+	public MappingJacksonValue getUserById(@PathVariable long id) {
 		Optional<User> optional = userRepository.findById(id);
 		if(!optional.isPresent()) {
 			throw new ResourceNotFoundException("userId-"+id);
 		}
 		
-		User user = optional.get();
+		MappingJacksonValue user = setUserFilter(optional.get());
 		return user;
 	}
 	
@@ -124,6 +129,15 @@ public class UserController {
 			throw new NotPermittedException("You can not delete an "+SpringSecurityConfig.ADMIN+" account!");
 		}
 		userRepository.delete(user);
+	}
+	
+	public static MappingJacksonValue setUserFilter(Object userObject) {
+		MappingJacksonValue mapping = new MappingJacksonValue(userObject);
+		SimpleBeanPropertyFilter filterProperty = SimpleBeanPropertyFilter.filterOutAllExcept("id","name","role","createdDate","soldTicketsNo","validatedTicketsNo");
+		
+		FilterProvider filter = new SimpleFilterProvider().addFilter("UserFilter", filterProperty);
+		mapping.setFilters(filter);
+		return mapping;
 	}
 	
 }

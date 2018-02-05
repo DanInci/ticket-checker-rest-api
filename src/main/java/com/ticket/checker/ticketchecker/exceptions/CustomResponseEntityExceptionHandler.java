@@ -43,7 +43,7 @@ public class CustomResponseEntityExceptionHandler extends ResponseEntityExceptio
 	}
 	
 	@ExceptionHandler(UsernameExistsException.class)
-	public final ResponseEntity<Object> handleUsernameExistsException(ResourceNotFoundException e,WebRequest request) {
+	public final ResponseEntity<Object> handleUsernameExistsException(UsernameExistsException e,WebRequest request) {
 		ExceptionResponse exceptionResponse = new ExceptionResponse(new Date(), e.getClass().getSimpleName(), e.getMessage());
 		return new ResponseEntity<Object>(exceptionResponse, HttpStatus.BAD_REQUEST);
 	}

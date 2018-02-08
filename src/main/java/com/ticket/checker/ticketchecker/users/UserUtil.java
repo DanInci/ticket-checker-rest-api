@@ -58,15 +58,35 @@ public class UserUtil {
 	}
 	
 	public void incrementUserSoldTickets(User user) {
-		int soldTicketsNo = user.getSoldTicketsNo() + 1;
-		user.setSoldTicketsNo(soldTicketsNo);
-		userRepository.save(user);
+		if(user != null) {
+			int soldTicketsNo = user.getSoldTicketsNo() + 1;
+			user.setSoldTicketsNo(soldTicketsNo);
+			userRepository.save(user);
+		}
 	}
 	
 	public void incrementUserValidatedTickets(User user) {
-		int validatedTicketsNo = user.getValidatedTicketsNo() + 1;
-		user.setValidatedTicketsNo(validatedTicketsNo);
-		userRepository.save(user);
+		if(user != null) {
+			int validatedTicketsNo = user.getValidatedTicketsNo() + 1;
+			user.setValidatedTicketsNo(validatedTicketsNo);
+			userRepository.save(user);
+		}
+	}
+	
+	public void decrementUserSoldTickets(User user) {
+		if(user != null) {
+			int soldTicketsNo = user.getSoldTicketsNo() - 1;
+			user.setSoldTicketsNo(soldTicketsNo);
+			userRepository.save(user);
+		}
+	}
+	
+	public void decrementUserValidatedTickets(User user) {
+		if(user != null) {
+			int validatedTicketsNo = user.getValidatedTicketsNo() - 1;
+			user.setValidatedTicketsNo(validatedTicketsNo);
+			userRepository.save(user);
+		}
 	}
 
 }

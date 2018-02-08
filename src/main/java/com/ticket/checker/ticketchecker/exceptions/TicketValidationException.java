@@ -5,8 +5,9 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 @SuppressWarnings("serial")
 @ResponseStatus(HttpStatus.BAD_REQUEST)
-public class NotPermittedException extends RuntimeException {
-	public NotPermittedException(String message) {
+public class TicketValidationException extends RuntimeException {
+
+	public TicketValidationException(String message) {
 		super(message);
 	}
 }

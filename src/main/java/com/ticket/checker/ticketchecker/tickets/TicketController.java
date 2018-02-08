@@ -7,6 +7,8 @@ import java.util.Optional;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.converter.json.MappingJacksonValue;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,13 +19,15 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.fasterxml.jackson.databind.ser.FilterProvider;
 import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import com.ticket.checker.ticketchecker.exceptions.ResourceNotFoundException;
 import com.ticket.checker.ticketchecker.exceptions.TicketExistsException;
-import com.ticket.checker.ticketchecker.exceptions.TicketValidatedException;
+import com.ticket.checker.ticketchecker.exceptions.TicketValidationException;
+import com.ticket.checker.ticketchecker.exceptions.UnauthorizedRequestException;
+import com.ticket.checker.ticketchecker.security.SpringSecurityConfig;
 import com.ticket.checker.ticketchecker.users.User;
+import com.ticket.checker.ticketchecker.users.UserController;
 import com.ticket.checker.ticketchecker.users.UserUtil;
 
 @RestController
@@ -36,43 +40,22 @@ public class TicketController {
 	private UserUtil userUtil;
 	
 	@GetMapping(path="/tickets")
-	public MappingJacksonValue getAllTickets() {
-		List<Ticket> ticketList = ticketRepository.findAll();
-		MappingJacksonValue map = setTicketFilters(ticketList, true);
-		return map;
-	}
-	
-	
-	@GetMapping(path="/tickets",params="validated")
-	public MappingJacksonValue getTicketsByValidation(@RequestParam("validated") boolean isValidated) {
-		List<Ticket> ticketList;
-		if(!isValidated) {
-			ticketList = ticketRepository.findByValidatedAtIsNullOrderBySoldAtAsc();
+	public MappingJacksonValue getTickets(@RequestParam(value="validated", required=false) Boolean isValidated, Pageable pageable) {
+		Page<Ticket> ticketPagingList = null;
+		if(isValidated != null) {
+			if(!isValidated) {
+				ticketPagingList = ticketRepository.findByValidatedAtIsNull(pageable);
+			}
+			else {
+				ticketPagingList = ticketRepository.findByValidatedAtIsNotNull(pageable);
+			}
 		}
 		else {
-			ticketList = ticketRepository.findByValidatedAtIsNotNullOrderByValidatedAtAsc();
+			ticketPagingList = ticketRepository.findAll(pageable);
 		}
+		List<Ticket> ticketList = ticketPagingList.getContent();
 		MappingJacksonValue map = setTicketFilters(ticketList, true);
 		return map;
-	}
-	
-	@GetMapping(path="/tickets",params="validate") 
-	public void validateTicketById(@RequestHeader("Authorization") String authorization, @RequestParam("validate") String ticketId) {
-		User validatedBy = userUtil.getUserFromAuthorization(authorization);
-		
-		Optional<Ticket> optional = ticketRepository.findById(ticketId);
-		if(!optional.isPresent()) {
-			throw new ResourceNotFoundException("Ticket " + ticketId + " was not found!");
-		}
-		Ticket ticket = optional.get();
-		if(ticket.getValidatedAt() != null) {
-			throw new TicketValidatedException("Ticket "+ ticketId +" was already validated!");
-		}
-		ticket.setValidatedBy(validatedBy);
-		ticket.setValidatedAt(new Date());
-		ticketRepository.save(ticket);
-		
-		userUtil.incrementUserValidatedTickets(validatedBy);
 	}
 	
 	@GetMapping("/tickets/{ticketId}")
@@ -102,13 +85,50 @@ public class TicketController {
 		userUtil.incrementUserSoldTickets(soldBy);
 	}
 	
+	@PostMapping(path="/tickets/{ticketId}") 
+	public void validateTicketById(@RequestHeader("Authorization") String authorization, @RequestHeader("validate") Boolean validate, @PathVariable String ticketId) {
+		User userMakingRequest = userUtil.getUserFromAuthorization(authorization);
+		
+		Optional<Ticket> optional = ticketRepository.findById(ticketId);
+		if(!optional.isPresent()) {
+			throw new ResourceNotFoundException("Ticket " + ticketId + " was not found!");
+		}
+		Ticket ticket = optional.get();
+		if(validate) {
+			if(ticket.getValidatedAt() != null) {
+				throw new TicketValidationException("Ticket "+ ticketId +" was already validated!");
+			}
+			userUtil.incrementUserValidatedTickets(userMakingRequest);
+			ticket.setValidatedBy(userMakingRequest);
+			ticket.setValidatedAt(new Date());
+		}
+		else {
+			if(userMakingRequest.getRole().equals("ROLE_" + SpringSecurityConfig.ADMIN)) {
+				if(ticket.getValidatedAt() == null) {
+					throw new TicketValidationException("Ticket "+ ticketId +" is not validated!");
+				}
+				User userThatValidatedTicket = ticket.getValidatedBy();
+				userUtil.decrementUserValidatedTickets(userThatValidatedTicket);
+				ticket.setValidatedBy(null);
+				ticket.setValidatedAt(null);
+			}
+			else {
+				throw new UnauthorizedRequestException("You are not authorized to invalidate tickets!");
+			}
+		}
+		ticketRepository.save(ticket);
+	}
+	
 	@DeleteMapping(path="/tickets/{ticketId}")
 	public void deleteTicketById(@PathVariable String ticketId) {
 		Optional<Ticket> optional = ticketRepository.findById(ticketId);
 		if(!optional.isPresent()) {
 			throw new ResourceNotFoundException("Ticket " + ticketId + " doesnt not exist!");
 		}
-		ticketRepository.deleteById(ticketId);
+		Ticket ticket = optional.get();
+		User userThatSoldTheTicket = ticket.getSoldBy();
+		userUtil.decrementUserSoldTickets(userThatSoldTheTicket);
+		ticketRepository.delete(ticket);
 	}
 	
 	@GetMapping(path="/tickets/numbers")
@@ -117,30 +137,34 @@ public class TicketController {
 	}
 	
 	@GetMapping(path="/tickets/numbers",params="validated")
-	public Integer getTicketCount(@RequestParam("validated") boolean isValidated) {
-		if(isValidated) {
-			List<Ticket> validatedTickets = ticketRepository.findByValidatedAtIsNullOrderBySoldAtAsc();
-			return validatedTickets.size();
+	public Long getTicketCount(@RequestParam("validated") boolean isValidated) {
+		if(!isValidated) {
+			Long validatedTickets = ticketRepository.countByValidatedAtIsNull();
+			return validatedTickets;
 		}
 		else {
-			List<Ticket> notValidatedTickets = ticketRepository.findByValidatedAtIsNotNullOrderByValidatedAtAsc();
-			return notValidatedTickets.size();
+			Long notValidatedTickets = ticketRepository.countByValidatedAtIsNotNull();
+			return notValidatedTickets;
 		}
 	}
 	
 	public static MappingJacksonValue setTicketFilters(Object ticketObject, boolean hideUserDetails) {
 		MappingJacksonValue mapping = new MappingJacksonValue(ticketObject);
-		SimpleBeanPropertyFilter filterProperty;
-		if(hideUserDetails) {
-			filterProperty = SimpleBeanPropertyFilter.filterOutAllExcept("ticketId","soldTo","soldAt","validatedAt");
-		} 
-		else {
-			filterProperty = SimpleBeanPropertyFilter.serializeAll();
+		SimpleFilterProvider ticketFilter = new SimpleFilterProvider().addFilter("TicketFilter", getTicketFilterProperty(hideUserDetails));
+		if(!hideUserDetails) {
+			ticketFilter.addFilter("UserFilter", UserController.getUserFilterProperty());
 		}
-		
-		FilterProvider filter = new SimpleFilterProvider().addFilter("TicketFilter", filterProperty);
-		mapping.setFilters(filter);
+		mapping.setFilters(ticketFilter);
 		return mapping;
+	}
+	
+	public static SimpleBeanPropertyFilter getTicketFilterProperty(boolean hideUserDetails) {
+		if(hideUserDetails) {
+			return SimpleBeanPropertyFilter.filterOutAllExcept("ticketId","soldTo","soldAt","validatedAt");
+		}
+		else {
+			return SimpleBeanPropertyFilter.serializeAll();
+		}
 	}
 	
 }

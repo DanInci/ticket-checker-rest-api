@@ -54,10 +54,10 @@ public class CustomResponseEntityExceptionHandler extends ResponseEntityExceptio
 		return new ResponseEntity<Object>(exceptionResponse, HttpStatus.BAD_REQUEST);
 	}
 	
-	@ExceptionHandler(NotPermittedException.class)
-	public final ResponseEntity<Object> handleNotPermittedException(NotPermittedException e,WebRequest request) {
+	@ExceptionHandler(UnauthorizedRequestException.class)
+	public final ResponseEntity<Object> handleUnauthorizedRequestException(UnauthorizedRequestException e,WebRequest request) {
 		ExceptionResponse exceptionResponse = new ExceptionResponse(new Date(), e.getClass().getSimpleName(), e.getMessage());
-		return new ResponseEntity<Object>(exceptionResponse, HttpStatus.BAD_REQUEST);
+		return new ResponseEntity<Object>(exceptionResponse, HttpStatus.UNAUTHORIZED);
 	}
 	
 	@ExceptionHandler(TicketExistsException.class)
@@ -66,8 +66,8 @@ public class CustomResponseEntityExceptionHandler extends ResponseEntityExceptio
 		return new ResponseEntity<Object>(exceptionResponse, HttpStatus.BAD_REQUEST);
 	}
 	
-	@ExceptionHandler(TicketValidatedException.class)
-	public final ResponseEntity<Object> handleTicketValidatedException(TicketValidatedException e,WebRequest request) {
+	@ExceptionHandler(TicketValidationException.class)
+	public final ResponseEntity<Object> handleTicketValidatedException(TicketValidationException e,WebRequest request) {
 		ExceptionResponse exceptionResponse = new ExceptionResponse(new Date(), e.getClass().getSimpleName(), e.getMessage());
 		return new ResponseEntity<Object>(exceptionResponse, HttpStatus.BAD_REQUEST);
 	}

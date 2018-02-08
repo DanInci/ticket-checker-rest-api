@@ -7,6 +7,8 @@ import java.util.Optional;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.json.MappingJacksonValue;
@@ -19,11 +21,10 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.fasterxml.jackson.databind.ser.FilterProvider;
 import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
-import com.ticket.checker.ticketchecker.exceptions.NotPermittedException;
 import com.ticket.checker.ticketchecker.exceptions.ResourceNotFoundException;
+import com.ticket.checker.ticketchecker.exceptions.UnauthorizedRequestException;
 import com.ticket.checker.ticketchecker.exceptions.UsernameExistsException;
 import com.ticket.checker.ticketchecker.security.SpringSecurityConfig;
 import com.ticket.checker.ticketchecker.tickets.Ticket;
@@ -49,14 +50,15 @@ public class UserController {
 	}
 	
 	@GetMapping("/users")
-	public MappingJacksonValue getAllUsers() {
-		List<User> users = userRepository.findAll();
-		return setUserFilter(users);
-	}
-	
-	@GetMapping(path="/users", params="role")
-	public MappingJacksonValue getUsersByRole(@RequestParam("role") String role) {
-		List<User> users = userRepository.findByRoleOrderByCreatedDateAsc("ROLE_" + role.toUpperCase());
+	public MappingJacksonValue getUsers(@RequestParam(value="role", required=false) String role, Pageable pageable) {
+		Page<User> usersPage = null;
+		if(role != null) {
+			usersPage = userRepository.findByRole("ROLE_" + role.toUpperCase(), pageable);
+		}
+		else {
+			usersPage = userRepository.findAll(pageable);
+		}
+		List<User> users = usersPage.getContent();
 		return setUserFilter(users);
 	}
 	
@@ -126,18 +128,21 @@ public class UserController {
 		
 		User user = optionalUser.get();
 		if(user.getRole().equals("ROLE_" + SpringSecurityConfig.ADMIN)) {
-			throw new NotPermittedException("You can not delete an "+SpringSecurityConfig.ADMIN+" account!");
+			throw new UnauthorizedRequestException("You can not delete an "+SpringSecurityConfig.ADMIN+" account!");
 		}
 		userRepository.delete(user);
 	}
 	
 	public static MappingJacksonValue setUserFilter(Object userObject) {
 		MappingJacksonValue mapping = new MappingJacksonValue(userObject);
-		SimpleBeanPropertyFilter filterProperty = SimpleBeanPropertyFilter.filterOutAllExcept("id","name","role","createdDate","soldTicketsNo","validatedTicketsNo");
-		
-		FilterProvider filter = new SimpleFilterProvider().addFilter("UserFilter", filterProperty);
+		SimpleFilterProvider filter = new SimpleFilterProvider().addFilter("UserFilter", getUserFilterProperty());
 		mapping.setFilters(filter);
 		return mapping;
+	}
+	
+	public static SimpleBeanPropertyFilter getUserFilterProperty() {
+		SimpleBeanPropertyFilter filterProperty = SimpleBeanPropertyFilter.filterOutAllExcept("id","name","role","createdDate","soldTicketsNo","validatedTicketsNo");
+		return filterProperty;
 	}
 	
 }

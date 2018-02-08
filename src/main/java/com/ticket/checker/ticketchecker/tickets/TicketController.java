@@ -132,8 +132,9 @@ public class TicketController {
 	}
 	
 	@GetMapping(path="/tickets/numbers")
-	public Long getAllTicketNumbers() {
-		return ticketRepository.count();
+	public Long[] getAllTicketNumbers() {
+		Long[] numbers = new Long[] { ticketRepository.count(), getTicketCount(true), getTicketCount(false) };
+		return numbers;
 	}
 	
 	@GetMapping(path="/tickets/numbers",params="validated")

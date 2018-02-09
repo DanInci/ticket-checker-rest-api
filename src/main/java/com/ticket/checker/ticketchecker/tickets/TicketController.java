@@ -131,42 +131,6 @@ public class TicketController {
 		ticketRepository.delete(ticket);
 	}
 	
-	@GetMapping(path="/tickets/numbers",params="filter")
-	public Long[] getAllTicketNumbers(@RequestParam(value="filter", required=false) String filter) {
-		Long[] numbers = new Long[3];
-		if(filter == null || filter.equals("listAll")) {
-			numbers[0] = ticketRepository.count();
-			numbers[1] = ticketRepository.countByValidatedAtIsNotNull();
-			numbers[2] = 0L;
-		}
-		else if(filter.equals("listValidated")) {
-			numbers[0] = 0L;
-			numbers[1] = ticketRepository.countByValidatedAtIsNotNull();
-			numbers[2] = 0L;
-		}
-		else if(filter.equals("listNotValidated")) {
-			numbers[0] = 0L;
-			numbers[1] = 0L;
-			numbers[2] = ticketRepository.countByValidatedAtIsNull();
-		}
-		return numbers;
-	}
-	
-	@GetMapping(path="/tickets/numbers",params="validated")
-	public Long getTicketCount(@RequestParam(value="validated", required=false) Boolean isValidated) {
-		Long ticketsNumbers;
-		if(isValidated==null) {
-			ticketsNumbers = ticketRepository.count();
-		}
-		else if(!isValidated) {
-			ticketsNumbers = ticketRepository.countByValidatedAtIsNull();
-		}
-		else {
-			ticketsNumbers = ticketRepository.countByValidatedAtIsNotNull();
-		}
-		return ticketsNumbers;
-	}
-	
 	public static MappingJacksonValue setTicketFilters(Object ticketObject, boolean hideUserDetails) {
 		MappingJacksonValue mapping = new MappingJacksonValue(ticketObject);
 		SimpleFilterProvider ticketFilter = new SimpleFilterProvider().addFilter("TicketFilter", getTicketFilterProperty(hideUserDetails));

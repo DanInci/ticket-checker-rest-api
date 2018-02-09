@@ -131,22 +131,40 @@ public class TicketController {
 		ticketRepository.delete(ticket);
 	}
 	
-	@GetMapping(path="/tickets/numbers")
-	public Long[] getAllTicketNumbers() {
-		Long[] numbers = new Long[] { ticketRepository.count(), getTicketCount(true), getTicketCount(false) };
+	@GetMapping(path="/tickets/numbers",params="filter")
+	public Long[] getAllTicketNumbers(@RequestParam(value="filter", required=false) String filter) {
+		Long[] numbers = new Long[3];
+		if(filter == null || filter.equals("listAll")) {
+			numbers[0] = ticketRepository.count();
+			numbers[1] = ticketRepository.countByValidatedAtIsNotNull();
+			numbers[2] = 0L;
+		}
+		else if(filter.equals("listValidated")) {
+			numbers[0] = 0L;
+			numbers[1] = ticketRepository.countByValidatedAtIsNotNull();
+			numbers[2] = 0L;
+		}
+		else if(filter.equals("listNotValidated")) {
+			numbers[0] = 0L;
+			numbers[1] = 0L;
+			numbers[2] = ticketRepository.countByValidatedAtIsNull();
+		}
 		return numbers;
 	}
 	
 	@GetMapping(path="/tickets/numbers",params="validated")
-	public Long getTicketCount(@RequestParam("validated") boolean isValidated) {
-		if(!isValidated) {
-			Long validatedTickets = ticketRepository.countByValidatedAtIsNull();
-			return validatedTickets;
+	public Long getTicketCount(@RequestParam(value="validated", required=false) Boolean isValidated) {
+		Long ticketsNumbers;
+		if(isValidated==null) {
+			ticketsNumbers = ticketRepository.count();
+		}
+		else if(!isValidated) {
+			ticketsNumbers = ticketRepository.countByValidatedAtIsNull();
 		}
 		else {
-			Long notValidatedTickets = ticketRepository.countByValidatedAtIsNotNull();
-			return notValidatedTickets;
+			ticketsNumbers = ticketRepository.countByValidatedAtIsNotNull();
 		}
+		return ticketsNumbers;
 	}
 	
 	public static MappingJacksonValue setTicketFilters(Object ticketObject, boolean hideUserDetails) {

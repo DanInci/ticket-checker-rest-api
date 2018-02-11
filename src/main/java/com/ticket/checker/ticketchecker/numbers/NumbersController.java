@@ -47,17 +47,16 @@ public class NumbersController {
 	
 	@GetMapping(path="/numbers/tickets",params="filter")
 	public Long[] getAllTicketsCount(@RequestParam(value="filter", required=true) String filter) {
-		Long[] numbers = {0L, 0L, 0L};
-		numbers[0] = ticketRepository.count();
+		Long[] numbers = {0L, 0L};
 		if(filter.equals("all")) {
+			numbers[0] = ticketRepository.count();
 			numbers[1] = ticketRepository.countByValidatedAtIsNotNull();
-			numbers[2] = numbers[0] - numbers[1];
 		}
 		else if(filter.equals("validated")) {
-			numbers[1] = ticketRepository.countByValidatedAtIsNotNull();
+			numbers[0] = ticketRepository.countByValidatedAtIsNotNull();
 		}
 		else if(filter.equals("notValidated")) {
-			numbers[2] = ticketRepository.countByValidatedAtIsNull();
+			numbers[0] = ticketRepository.countByValidatedAtIsNull();
 		}
 		return numbers;
 	}

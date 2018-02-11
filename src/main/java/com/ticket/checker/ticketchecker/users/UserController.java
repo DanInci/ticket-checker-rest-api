@@ -100,7 +100,7 @@ public class UserController {
 	}
 	
 	@PostMapping("/users")
-	public ResponseEntity<Object> createUser(@Valid @RequestBody User user) {
+	public ResponseEntity<MappingJacksonValue> createUser(@Valid @RequestBody User user) {
 		String username = user.getUsername();
 		String password = user.getPassword();
 		Optional<User> usersWithSameUsername = userRepository.findByUsername(username);
@@ -116,7 +116,7 @@ public class UserController {
 		user.setValidatedTicketsNo(0);
 		userRepository.save(user);
 		
-		return new ResponseEntity<Object>(HttpStatus.CREATED);
+		return new ResponseEntity<MappingJacksonValue>(setUserFilter(user), HttpStatus.CREATED);
 	}
 	
 	@DeleteMapping("/users/{id}")

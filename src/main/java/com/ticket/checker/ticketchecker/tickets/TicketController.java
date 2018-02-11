@@ -9,6 +9,8 @@ import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.json.MappingJacksonValue;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -70,7 +72,7 @@ public class TicketController {
 	}
 	
 	@PostMapping("/tickets")
-	public void createTicket(@RequestHeader("Authorization") String authorization,@Valid @RequestBody Ticket ticket) {
+	public ResponseEntity<MappingJacksonValue> createTicket(@RequestHeader("Authorization") String authorization,@Valid @RequestBody Ticket ticket) {
 		User soldBy = userUtil.getUserFromAuthorization(authorization);
 		
 		String ticketId = ticket.getTicketId();
@@ -83,6 +85,8 @@ public class TicketController {
 
 		ticketRepository.save(ticket);
 		userUtil.incrementUserSoldTickets(soldBy);
+		
+		return new ResponseEntity<MappingJacksonValue>(setTicketFilters(ticket, true),HttpStatus.CREATED);
 	}
 	
 	@PostMapping(path="/tickets/{ticketId}") 

@@ -46,14 +46,14 @@ public class TicketController {
 		Page<Ticket> ticketPagingList = null;
 		if(isValidated != null) {
 			if(!isValidated) {
-				ticketPagingList = ticketRepository.findByValidatedAtIsNull(pageable);
+				ticketPagingList = ticketRepository.findByValidatedAtIsNullOrderBySoldAtDesc(pageable);
 			}
 			else {
-				ticketPagingList = ticketRepository.findByValidatedAtIsNotNull(pageable);
+				ticketPagingList = ticketRepository.findByValidatedAtIsNotNullOrderByValidatedAtDesc(pageable);
 			}
 		}
 		else {
-			ticketPagingList = ticketRepository.findAll(pageable);
+			ticketPagingList = ticketRepository.findAllByOrderBySoldAtDesc(pageable);
 		}
 		List<Ticket> ticketList = ticketPagingList.getContent();
 		MappingJacksonValue map = setTicketFilters(ticketList, true);

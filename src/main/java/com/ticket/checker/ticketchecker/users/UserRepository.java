@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface UserRepository extends JpaRepository<User, Long>{
 	Optional<User> findByUsername(String username);
-	Page<User> findByRole(String role, Pageable pageable);
+	Page<User> findAllByOrderByCreatedDateDesc(Pageable pageable);
+	Page<User> findByRoleOrderByCreatedDateDesc(String role, Pageable pageable);
 	Long countByRole(String role);
 }

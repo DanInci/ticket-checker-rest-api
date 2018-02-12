@@ -8,6 +8,7 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
+import javax.persistence.OrderBy;
 import javax.validation.constraints.Size;
 
 import com.fasterxml.jackson.annotation.JsonFilter;
@@ -35,12 +36,14 @@ public class User {
 	private Date createdDate;
 	
 	@OneToMany(mappedBy="soldBy", fetch=FetchType.LAZY)
+	@OrderBy("soldAt desc")
 	@JsonIgnore
 	private List<Ticket> soldTickets;
 	
 	private int soldTicketsNo;
 	
 	@OneToMany(mappedBy="validatedBy", fetch=FetchType.LAZY)
+	@OrderBy("validatedAt desc")
 	@JsonIgnore
 	private List<Ticket> validatedTickets;
 	

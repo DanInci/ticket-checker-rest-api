@@ -53,10 +53,10 @@ public class UserController {
 	public MappingJacksonValue getUsers(@RequestParam(value="role", required=false) String role, Pageable pageable) {
 		Page<User> usersPage = null;
 		if(role != null) {
-			usersPage = userRepository.findByRole("ROLE_" + role.toUpperCase(), pageable);
+			usersPage = userRepository.findByRoleOrderByCreatedDateDesc("ROLE_" + role.toUpperCase(), pageable);
 		}
 		else {
-			usersPage = userRepository.findAll(pageable);
+			usersPage = userRepository.findAllByOrderByCreatedDateDesc(pageable);
 		}
 		List<User> users = usersPage.getContent();
 		return setUserFilter(users);

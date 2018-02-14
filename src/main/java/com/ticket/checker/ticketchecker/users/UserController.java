@@ -130,6 +130,12 @@ public class UserController {
 		if(user.getRole().equals("ROLE_" + SpringSecurityConfig.ADMIN)) {
 			throw new UnauthorizedRequestException("You can not delete an "+SpringSecurityConfig.ADMIN+" account!");
 		}
+		for(Ticket ticket : user.getSoldTickets()) {
+			ticket.setSoldBy(null);
+		}
+		for(Ticket ticket : user.getValidatedTickets()) {
+			ticket.setValidatedBy(null);
+		}
 		userRepository.delete(user);
 	}
 	

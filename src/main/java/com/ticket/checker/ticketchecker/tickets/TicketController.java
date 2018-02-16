@@ -132,6 +132,8 @@ public class TicketController {
 		Ticket ticket = optional.get();
 		User userThatSoldTheTicket = ticket.getSoldBy();
 		userUtil.decrementUserSoldTickets(userThatSoldTheTicket);
+		User userThatValidatedTheTicket = ticket.getValidatedBy();
+		userUtil.decrementUserValidatedTickets(userThatValidatedTheTicket);
 		ticketRepository.delete(ticket);
 	}
 	

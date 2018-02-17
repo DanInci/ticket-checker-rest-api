@@ -1,5 +1,7 @@
 package com.ticket.checker.ticketchecker.tickets;
 
+import java.util.Date;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -10,4 +12,6 @@ public interface TicketRepository extends JpaRepository<Ticket, String>{
 	Long countByValidatedAtIsNull();
 	Page<Ticket> findByValidatedAtIsNotNullOrderByValidatedAtDesc(Pageable pageable);
 	Long countByValidatedAtIsNotNull();
+	Long countBySoldAtBetween(Date startDate, Date endDate);
+	Long countByValidatedAtBetween(Date startDate, Date endDate);
 }

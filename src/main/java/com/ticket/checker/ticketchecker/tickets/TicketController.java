@@ -149,7 +149,7 @@ public class TicketController {
 	
 	public static SimpleBeanPropertyFilter getTicketFilterProperty(boolean hideUserDetails) {
 		if(hideUserDetails) {
-			return SimpleBeanPropertyFilter.filterOutAllExcept("ticketId","soldTo","soldAt","validatedAt");
+			return SimpleBeanPropertyFilter.filterOutAllExcept("ticketId","soldTo","soldToBirthdate","soldAt","validatedAt");
 		}
 		else {
 			return SimpleBeanPropertyFilter.serializeAll();

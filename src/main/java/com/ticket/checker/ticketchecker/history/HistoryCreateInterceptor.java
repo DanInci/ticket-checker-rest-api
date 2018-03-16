@@ -26,14 +26,16 @@ public class HistoryCreateInterceptor extends HandlerInterceptorAdapter {
 		String authorization = request.getHeader("Authorization");
 		
 		String username = userUtil.getUsernameFromAuthorization(authorization);
-		String requestURI = request.getRequestURI();
-		if(requestURI.length()>255) {
-			requestURI = requestURI.substring(0, 250) + "[...]";
+		if(!username.equals("-")) {
+			String requestURI = request.getRequestURI();
+			if(requestURI.length()>255) {
+				requestURI = requestURI.substring(0, 250) + "[...]";
+			}
+			String requestMethod = request.getMethod();
+			int responseStatus = response.getStatus();
+			
+			History history = new History(new Date(), username, requestURI, requestMethod, responseStatus);
+			historyRepository.save(history);
 		}
-		String requestMethod = request.getMethod();
-		int responseStatus = response.getStatus();
-		
-		History history = new History(new Date(), username, requestURI, requestMethod, responseStatus);
-		historyRepository.save(history);
 	}
 }

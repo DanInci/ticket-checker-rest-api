@@ -1,5 +1,8 @@
 package com.ticket.checker.ticketchecker.statistics;
 
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -83,10 +86,20 @@ public class StatisticsController {
 	}
 	
 	private List<Statistic> getTicketsStatisticsForInterval(Long interval, String type, int size) {
-		Long now = System.currentTimeMillis();
 		List<Statistic> statistics = new ArrayList<Statistic>();
-		Long roundedTime = now - (now % interval);
-		Long startTime = roundedTime - size * interval;
+		Date beginDate = null;
+		if(interval != null && interval == 604800000L) {
+			LocalDate nowLocale = LocalDate.now();
+			LocalDate localDate = nowLocale.with(DayOfWeek.MONDAY);
+			beginDate = Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+		}
+		else {
+			Long now = System.currentTimeMillis();
+			Long roundedTime = now - (now % interval);
+			beginDate = new Date(roundedTime);
+		}
+		
+		Long startTime = beginDate.getTime() - size * interval;
 		Long endTime = startTime + interval;
 		for(int i=0;i<size;i++) {
 			startTime += interval;

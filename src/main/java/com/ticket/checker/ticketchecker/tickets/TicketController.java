@@ -41,6 +41,7 @@ public class TicketController {
 	@Autowired
 	private UserUtil userUtil;
 	
+	
 	@GetMapping(path="/tickets")
 	public MappingJacksonValue getTickets(@RequestParam(value="validated", required=false) Boolean isValidated, Pageable pageable) {
 		Page<Ticket> ticketPagingList = null;

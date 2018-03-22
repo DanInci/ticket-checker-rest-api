@@ -7,6 +7,7 @@ import java.util.Optional;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -38,9 +39,12 @@ public class UserController {
 	
 	@Autowired UserUtil util;
 	
+	@Value("${application.name}")
+	private String appName;
+	
 	@GetMapping(path="/")
-	public ResponseEntity<Object> status() {
-		return new ResponseEntity<Object>(HttpStatus.ACCEPTED);
+	public ResponseEntity<String> getConnectionDetails() {
+		return new ResponseEntity<String>(appName, HttpStatus.ACCEPTED);
 	}
 	
 	@GetMapping("/login")

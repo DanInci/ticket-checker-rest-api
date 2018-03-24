@@ -26,8 +26,6 @@ import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import com.ticket.checker.ticketchecker.exceptions.ResourceNotFoundException;
 import com.ticket.checker.ticketchecker.exceptions.TicketExistsException;
 import com.ticket.checker.ticketchecker.exceptions.TicketValidationException;
-import com.ticket.checker.ticketchecker.exceptions.UnauthorizedRequestException;
-import com.ticket.checker.ticketchecker.security.SpringSecurityConfig;
 import com.ticket.checker.ticketchecker.users.User;
 import com.ticket.checker.ticketchecker.users.UserController;
 import com.ticket.checker.ticketchecker.users.UserUtil;
@@ -73,7 +71,7 @@ public class TicketController {
 	}
 	
 	@PostMapping("/tickets")
-	public ResponseEntity<MappingJacksonValue> createTicket(@RequestHeader("Authorization") String authorization,@Valid @RequestBody Ticket ticket) {
+	public ResponseEntity<MappingJacksonValue> createTicket(@RequestHeader("Authorization") String authorization, @Valid @RequestBody Ticket ticket) {
 		User soldBy = userUtil.getUserFromAuthorization(authorization);
 		
 		String ticketId = ticket.getTicketId();
@@ -90,7 +88,26 @@ public class TicketController {
 		return new ResponseEntity<MappingJacksonValue>(setTicketFilters(ticket, true),HttpStatus.CREATED);
 	}
 	
-	@PostMapping(path="/tickets/{ticketId}") 
+	@PostMapping(path="/tickets/{ticketId}")
+	public MappingJacksonValue editTicket(@PathVariable String ticketId, @Valid @RequestBody Ticket ticket) {
+		Optional<Ticket> optional = ticketRepository.findById(ticketId);
+		if(!optional.isPresent()) {
+			throw new ResourceNotFoundException("Ticket " + ticketId + " was not found!");
+		}
+		
+		Ticket existingTicket = optional.get();
+		if(ticket.getSoldTo() != null) {
+			existingTicket.setSoldTo(ticket.getSoldTo());
+		}
+		if(ticket.getSoldToBirthdate() != null) {
+			existingTicket.setSoldToBirthdate(ticket.getSoldToBirthdate());
+		}
+		ticketRepository.save(existingTicket);
+		
+		return setTicketFilters(existingTicket, false);
+	}
+	
+	@PostMapping(path="/tickets/validate/{ticketId}") 
 	public void validateTicketById(@RequestHeader("Authorization") String authorization, @RequestHeader("validate") Boolean validate, @PathVariable String ticketId) {
 		User userMakingRequest = userUtil.getUserFromAuthorization(authorization);
 		
@@ -108,18 +125,13 @@ public class TicketController {
 			ticket.setValidatedAt(new Date());
 		}
 		else {
-			if(userMakingRequest.getRole().equals("ROLE_" + SpringSecurityConfig.ADMIN)) {
-				if(ticket.getValidatedAt() == null) {
-					throw new TicketValidationException("Ticket "+ ticketId +" is not validated!");
-				}
-				User userThatValidatedTicket = ticket.getValidatedBy();
-				userUtil.decrementUserValidatedTickets(userThatValidatedTicket);
-				ticket.setValidatedBy(null);
-				ticket.setValidatedAt(null);
+			if(ticket.getValidatedAt() == null) {
+				throw new TicketValidationException("Ticket "+ ticketId +" is not validated!");
 			}
-			else {
-				throw new UnauthorizedRequestException("You are not authorized to invalidate tickets!");
-			}
+			User userThatValidatedTicket = ticket.getValidatedBy();
+			userUtil.decrementUserValidatedTickets(userThatValidatedTicket);
+			ticket.setValidatedBy(null);
+			ticket.setValidatedAt(null);
 		}
 		ticketRepository.save(ticket);
 	}

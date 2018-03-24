@@ -123,11 +123,33 @@ public class UserController {
 		return new ResponseEntity<MappingJacksonValue>(setUserFilter(user), HttpStatus.CREATED);
 	}
 	
-	@DeleteMapping("/users/{id}")
-	public void deleteUser(@PathVariable long id) {
-		Optional<User> optionalUser = userRepository.findById(id);
+	@PostMapping("/users/{userId}")
+	public MappingJacksonValue editUser(@PathVariable long userId, @Valid @RequestBody User user) {
+		Optional<User> optionalUser = userRepository.findById(userId);
 		if(!optionalUser.isPresent()) {
-			throw new ResourceNotFoundException("User by usedId: " + id);
+			throw new ResourceNotFoundException("User by usedId: " + userId);
+		}
+		
+		User existingUser = optionalUser.get();
+		if(user.getPassword() != null) {
+			existingUser.setPassword(user.getPassword());
+		}
+		if(user.getName() != null) {
+			existingUser.setName(user.getName());
+		}
+		if(user.getRole() != null) {
+			existingUser.setRole(user.getRole());
+		}
+		userRepository.save(existingUser);
+		
+		return setUserFilter(existingUser);
+	}
+	
+	@DeleteMapping("/users/{userId}")
+	public void deleteUser(@PathVariable long userId) {
+		Optional<User> optionalUser = userRepository.findById(userId);
+		if(!optionalUser.isPresent()) {
+			throw new ResourceNotFoundException("User by usedId: " + userId);
 		}
 		
 		User user = optionalUser.get();

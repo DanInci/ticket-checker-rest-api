@@ -131,9 +131,6 @@ public class UserController {
 		}
 		
 		User existingUser = optionalUser.get();
-		if(user.getPassword() != null) {
-			existingUser.setPassword(user.getPassword());
-		}
 		if(user.getName() != null) {
 			existingUser.setName(user.getName());
 		}
@@ -141,7 +138,6 @@ public class UserController {
 			existingUser.setRole(user.getRole());
 		}
 		userRepository.save(existingUser);
-		
 		return setUserFilter(existingUser);
 	}
 	

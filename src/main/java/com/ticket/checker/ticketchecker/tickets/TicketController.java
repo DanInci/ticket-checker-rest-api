@@ -108,7 +108,7 @@ public class TicketController {
 	}
 	
 	@PostMapping(path="/tickets/validate/{ticketId}") 
-	public void validateTicketById(@RequestHeader("Authorization") String authorization, @RequestHeader("validate") Boolean validate, @PathVariable String ticketId) {
+	public MappingJacksonValue validateTicketById(@RequestHeader("Authorization") String authorization, @RequestHeader("validate") Boolean validate, @PathVariable String ticketId) {
 		User userMakingRequest = userUtil.getUserFromAuthorization(authorization);
 		
 		Optional<Ticket> optional = ticketRepository.findById(ticketId);
@@ -134,6 +134,7 @@ public class TicketController {
 			ticket.setValidatedAt(null);
 		}
 		ticketRepository.save(ticket);
+		return setTicketFilters(ticket, false);
 	}
 	
 	@DeleteMapping(path="/tickets/{ticketId}")

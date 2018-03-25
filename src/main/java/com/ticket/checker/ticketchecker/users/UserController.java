@@ -131,6 +131,10 @@ public class UserController {
 		}
 		
 		User existingUser = optionalUser.get();
+		if(user.getRole().equals("ROLE_" + SpringSecurityConfig.ADMIN)) {
+			throw new UnauthorizedRequestException("You can not edit an "+SpringSecurityConfig.ADMIN+" account!");
+		}
+		
 		if(user.getName() != null) {
 			existingUser.setName(user.getName());
 		}

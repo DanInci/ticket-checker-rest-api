@@ -1,5 +1,6 @@
 package com.ticket.checker.ticketchecker.tickets;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -55,8 +56,19 @@ public class TicketController {
 			ticketPagingList = ticketRepository.findAllByOrderBySoldAtDesc(pageable);
 		}
 		List<Ticket> ticketList = ticketPagingList.getContent();
-		MappingJacksonValue map = setTicketFilters(ticketList, true);
-		return map;
+		return setTicketFilters(ticketList, true);
+	}
+	
+	@GetMapping(path="/tickets/search")
+	public MappingJacksonValue findTickets(@RequestParam(value="type", required=true) String type, @RequestParam(value="value", required=true) String value, Pageable pageable) {
+		List<Ticket> ticketList = new ArrayList<Ticket>();
+		if(type.toUpperCase().equals("TICKETID")) {
+			ticketList = ticketRepository.findByTicketIdStartsWithIgnoreCase(value, pageable).getContent();
+		}
+		else if(type.toUpperCase().equals("SOLDTO")) {
+			ticketList = ticketRepository.findBySoldToStartsWithIgnoreCase(value, pageable).getContent();
+		}
+		return setTicketFilters(ticketList, true);
 	}
 	
 	@GetMapping("/tickets/{ticketId}")

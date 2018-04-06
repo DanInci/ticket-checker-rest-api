@@ -66,6 +66,12 @@ public class UserController {
 		return setUserFilter(users);
 	}
 	
+	@GetMapping("/users/search") 
+	public MappingJacksonValue findUsers(@RequestParam(value="name", required=true) String name, Pageable pageable) {
+		List<User> users = userRepository.findByNameStartsWithIgnoreCase(name, pageable).getContent();
+		return setUserFilter(users);
+	}
+	
 	@GetMapping("/users/{id}")
 	public MappingJacksonValue getUserById(@PathVariable long id) {
 		Optional<User> optional = userRepository.findById(id);

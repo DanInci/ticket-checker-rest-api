@@ -8,7 +8,6 @@ import java.util.Optional;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -42,31 +41,27 @@ public class TicketController {
 	
 	
 	@GetMapping(path="/tickets")
-	public MappingJacksonValue getTickets(@RequestParam(value="validated", required=false) Boolean isValidated, Pageable pageable) {
-		Page<Ticket> ticketPagingList = null;
-		if(isValidated != null) {
-			if(!isValidated) {
-				ticketPagingList = ticketRepository.findByValidatedAtIsNullOrderBySoldAtDesc(pageable);
-			}
-			else {
-				ticketPagingList = ticketRepository.findByValidatedAtIsNotNullOrderByValidatedAtDesc(pageable);
+	public MappingJacksonValue getTickets(@RequestParam(value="type", required=false) String type, @RequestParam(value="value", required=false) String value, Pageable pageable) {
+		List<Ticket> ticketList = new ArrayList<Ticket>();
+		if(type != null && value != null) {
+			switch(type.toUpperCase()) {
+				case "VALIDATED": {
+					if(value.toUpperCase().equals("TRUE")) {
+						ticketList = ticketRepository.findByValidatedAtIsNotNullOrderByValidatedAtDesc(pageable).getContent();
+					}
+					else {
+						ticketList = ticketRepository.findByValidatedAtIsNullOrderBySoldAtDesc(pageable).getContent();
+					}
+					break;
+				}
+				case "SEARCH": {
+					ticketList = ticketRepository.findByTicketIdStartsWithIgnoreCaseOrSoldToStartsWithIgnoreCase(value, value, pageable).getContent();
+					break;
+				}
 			}
 		}
 		else {
-			ticketPagingList = ticketRepository.findAllByOrderBySoldAtDesc(pageable);
-		}
-		List<Ticket> ticketList = ticketPagingList.getContent();
-		return setTicketFilters(ticketList, true);
-	}
-	
-	@GetMapping(path="/tickets/search")
-	public MappingJacksonValue findTickets(@RequestParam(value="type", required=true) String type, @RequestParam(value="value", required=true) String value, Pageable pageable) {
-		List<Ticket> ticketList = new ArrayList<Ticket>();
-		if(type.toUpperCase().equals("TICKETID")) {
-			ticketList = ticketRepository.findByTicketIdStartsWithIgnoreCase(value, pageable).getContent();
-		}
-		else if(type.toUpperCase().equals("SOLDTO")) {
-			ticketList = ticketRepository.findBySoldToStartsWithIgnoreCase(value, pageable).getContent();
+			ticketList = ticketRepository.findAllByOrderBySoldAtDesc(pageable).getContent();
 		}
 		return setTicketFilters(ticketList, true);
 	}

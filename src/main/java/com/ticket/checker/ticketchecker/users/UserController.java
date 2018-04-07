@@ -1,5 +1,6 @@
 package com.ticket.checker.ticketchecker.users;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -8,7 +9,6 @@ import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -54,22 +54,24 @@ public class UserController {
 	}
 	
 	@GetMapping("/users")
-	public MappingJacksonValue getUsers(@RequestParam(value="role", required=false) String role, Pageable pageable) {
-		Page<User> usersPage = null;
-		if(role != null) {
-			usersPage = userRepository.findByRoleOrderByCreatedDateDesc("ROLE_" + role.toUpperCase(), pageable);
+	public MappingJacksonValue getUsers(@RequestParam(value="type", required=false) String type, @RequestParam(value="value", required=false) String value, Pageable pageable) {
+		List<User> userList = new ArrayList<User>();
+		if(type!=null && value != null) {
+			switch(type.toUpperCase()) {
+				case "ROLE": {
+					userList = userRepository.findByRoleOrderByCreatedDateDesc("ROLE_" + value.toUpperCase(), pageable).getContent();
+					break;
+				}
+				case "SEARCH": {
+					userList = userRepository.findByNameStartsWithIgnoreCase(value, pageable).getContent();
+					break;
+				}
+			}
 		}
 		else {
-			usersPage = userRepository.findAllByOrderByCreatedDateDesc(pageable);
+			userList = userRepository.findAllByOrderByCreatedDateDesc(pageable).getContent();
 		}
-		List<User> users = usersPage.getContent();
-		return setUserFilter(users);
-	}
-	
-	@GetMapping("/users/search") 
-	public MappingJacksonValue findUsers(@RequestParam(value="name", required=true) String name, Pageable pageable) {
-		List<User> users = userRepository.findByNameStartsWithIgnoreCase(name, pageable).getContent();
-		return setUserFilter(users);
+		return setUserFilter(userList);
 	}
 	
 	@GetMapping("/users/{id}")

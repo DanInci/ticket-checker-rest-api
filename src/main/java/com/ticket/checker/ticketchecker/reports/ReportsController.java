@@ -18,7 +18,7 @@ import com.ticket.checker.ticketchecker.users.UserUtil;
 @RestController
 public class ReportsController {
 	
-	@Value("${reports.folder}")
+	@Value("${reportsFolder:reports}")
 	private String reportsFolderName;
 	
 	@Autowired
@@ -28,11 +28,7 @@ public class ReportsController {
 
 	@PostMapping(path="/report")
 	public void createReports(@RequestHeader("Authorization") String authorization, @RequestBody String crashReportJSON) {
-		String path = reportsFolderName;
-		if(reportsFolderName == null || reportsFolderName.equals("")) {
-			path = "reports";
-		}
-		File reportsDirectory = new File(path);
+		File reportsDirectory = new File(reportsFolderName);
 		if(!reportsDirectory.exists()) {
 			reportsDirectory.mkdirs();
 		}
@@ -40,7 +36,7 @@ public class ReportsController {
 		String username = userUtil.getUsernameFromAuthorization(authorization);
 	
 		try {
-			File reportFile = createReportFile(path, username);
+			File reportFile = createReportFile(reportsDirectory, username);
 			PrintWriter writer = new PrintWriter(reportFile);
 			writer.println(crashReportJSON);
 			writer.close();
@@ -48,7 +44,7 @@ public class ReportsController {
 		} catch (FileNotFoundException  e) {}
 	}
 	
-	private static File createReportFile(String logsFolderPath, String username) {
+	private static File createReportFile(File reportsDirectory, String username) {
 		File logFile;
 		Date currentDate = new Date();
 		String baseFileName = BASE_REPORT_FILE_NAME + "-" + username + "-" + new SimpleDateFormat("yyyyMMdd").format(currentDate);
@@ -56,7 +52,7 @@ public class ReportsController {
 		do {
 			count++;
 			String fileName = baseFileName + "_" + count;
-			logFile = new File(logsFolderPath + "\\" + fileName + ".report");
+			logFile = new File(reportsDirectory.getPath() + File.separator + fileName + ".report");
 		}while(logFile.isFile());
 		return logFile;
 	}

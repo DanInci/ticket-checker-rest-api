@@ -39,7 +39,7 @@ public class UserController {
 	
 	@Autowired UserUtil util;
 	
-	@Value("${application.name}")
+	@Value("${application.name:Ticket Checker}")
 	private String appName;
 	
 	@GetMapping(path="/")

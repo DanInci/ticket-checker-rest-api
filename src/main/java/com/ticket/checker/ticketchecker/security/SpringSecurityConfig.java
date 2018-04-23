@@ -21,7 +21,8 @@ import com.ticket.checker.ticketchecker.TicketCheckerApplication;
 public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 	
 	public static final String ADMIN = "ADMIN";
-	public static final String USER = "USER";
+	public static final String PUBLISHER = "PUBLISHER";
+	public static final String VALIDATOR = "VALIDATOR";
 	
 	@Autowired
 	private CustomUserDetailsService userDetailsService;
@@ -34,9 +35,11 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 		http.csrf().disable();
 		http.authorizeRequests()
 			.antMatchers("/").permitAll()
+			.antMatchers("/images/**").permitAll()
 			.antMatchers("/users/**").hasRole(ADMIN)
-			.antMatchers("/numbers/**").hasRole(ADMIN)
-			.antMatchers(HttpMethod.DELETE, "/tickets/**").hasRole(ADMIN)
+			.antMatchers(HttpMethod.DELETE,"/tickets/**").hasRole(ADMIN)
+			.antMatchers(HttpMethod.POST, "/tickets").hasAnyRole(ADMIN, PUBLISHER)
+			.antMatchers(HttpMethod.POST, "/tickets/validate/**").hasAnyRole(ADMIN, VALIDATOR)
 			.antMatchers(HttpMethod.POST, "/tickets/**").hasRole(ADMIN)
 			.anyRequest().authenticated();
 		http.httpBasic().realmName(TicketCheckerApplication.REALM_NAME).authenticationEntryPoint(authenticationEntryPoint);

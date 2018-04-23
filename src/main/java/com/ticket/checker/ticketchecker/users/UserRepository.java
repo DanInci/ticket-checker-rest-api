@@ -10,5 +10,6 @@ public interface UserRepository extends JpaRepository<User, Long>{
 	Optional<User> findByUsername(String username);
 	Page<User> findAllByOrderByCreatedDateDesc(Pageable pageable);
 	Page<User> findByRoleOrderByCreatedDateDesc(String role, Pageable pageable);
+	Page<User> findByNameStartsWithIgnoreCase(String name, Pageable pageable);
 	Long countByRole(String role);
 }

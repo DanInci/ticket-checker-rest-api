@@ -23,6 +23,8 @@ public class Ticket {
 	@Size(max=255, message="Sold to must have as much as 255 chars")
 	private String soldTo;
 	
+	private Date soldToBirthdate;
+	
 	@ManyToOne
 	private User soldBy;
 	
@@ -36,10 +38,11 @@ public class Ticket {
 	
 	public Ticket() {}
 
-	public Ticket(String ticketId, String soldTo, User soldBy, Date soldAt, User validatedBy, Date validatedAt) {
+	public Ticket(String ticketId, String soldTo, Date soldToBirthdate, User soldBy, Date soldAt, User validatedBy, Date validatedAt) {
 		super();
 		this.ticketId = ticketId;
 		this.soldTo = soldTo;
+		this.soldToBirthdate = soldToBirthdate;
 		this.soldBy = soldBy;
 		this.soldAt = soldAt;
 		this.validatedBy = validatedBy;
@@ -60,6 +63,14 @@ public class Ticket {
 	
 	public void setSoldTo(String soldTo) {
 		this.soldTo = soldTo;
+	}
+	
+	public Date getSoldToBirthdate() {
+		return soldToBirthdate;
+	}
+	
+	public void setSoldToBirthdate(Date soldToBirthdate) {
+		this.soldToBirthdate = soldToBirthdate;
 	}
 	
 	public User getSoldBy() {

@@ -1,5 +1,6 @@
 package com.ticket.checker.ticketchecker.users;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -7,7 +8,7 @@ import java.util.Optional;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -38,9 +39,12 @@ public class UserController {
 	
 	@Autowired UserUtil util;
 	
+	@Value("${application.name}")
+	private String appName;
+	
 	@GetMapping(path="/")
-	public ResponseEntity<Object> status() {
-		return new ResponseEntity<Object>(HttpStatus.ACCEPTED);
+	public ResponseEntity<String> getConnectionDetails() {
+		return new ResponseEntity<String>(appName, HttpStatus.ACCEPTED);
 	}
 	
 	@GetMapping("/login")
@@ -50,16 +54,24 @@ public class UserController {
 	}
 	
 	@GetMapping("/users")
-	public MappingJacksonValue getUsers(@RequestParam(value="role", required=false) String role, Pageable pageable) {
-		Page<User> usersPage = null;
-		if(role != null) {
-			usersPage = userRepository.findByRoleOrderByCreatedDateDesc("ROLE_" + role.toUpperCase(), pageable);
+	public MappingJacksonValue getUsers(@RequestParam(value="type", required=false) String type, @RequestParam(value="value", required=false) String value, Pageable pageable) {
+		List<User> userList = new ArrayList<User>();
+		if(type!=null && value != null) {
+			switch(type.toUpperCase()) {
+				case "ROLE": {
+					userList = userRepository.findByRoleOrderByCreatedDateDesc("ROLE_" + value.toUpperCase(), pageable).getContent();
+					break;
+				}
+				case "SEARCH": {
+					userList = userRepository.findByNameStartsWithIgnoreCase(value, pageable).getContent();
+					break;
+				}
+			}
 		}
 		else {
-			usersPage = userRepository.findAllByOrderByCreatedDateDesc(pageable);
+			userList = userRepository.findAllByOrderByCreatedDateDesc(pageable).getContent();
 		}
-		List<User> users = usersPage.getContent();
-		return setUserFilter(users);
+		return setUserFilter(userList);
 	}
 	
 	@GetMapping("/users/{id}")
@@ -119,16 +131,44 @@ public class UserController {
 		return new ResponseEntity<MappingJacksonValue>(setUserFilter(user), HttpStatus.CREATED);
 	}
 	
-	@DeleteMapping("/users/{id}")
-	public void deleteUser(@PathVariable long id) {
-		Optional<User> optionalUser = userRepository.findById(id);
+	@PostMapping("/users/{userId}")
+	public MappingJacksonValue editUser(@PathVariable long userId, @Valid @RequestBody User user) {
+		Optional<User> optionalUser = userRepository.findById(userId);
 		if(!optionalUser.isPresent()) {
-			throw new ResourceNotFoundException("User by usedId: " + id);
+			throw new ResourceNotFoundException("User by usedId: " + userId);
+		}
+		
+		User existingUser = optionalUser.get();
+		if(user.getRole().equals("ROLE_" + SpringSecurityConfig.ADMIN)) {
+			throw new UnauthorizedRequestException("You can not edit an "+SpringSecurityConfig.ADMIN+" account!");
+		}
+		
+		if(user.getName() != null) {
+			existingUser.setName(user.getName());
+		}
+		if(user.getRole() != null) {
+			existingUser.setRole(user.getRole());
+		}
+		userRepository.save(existingUser);
+		return setUserFilter(existingUser);
+	}
+	
+	@DeleteMapping("/users/{userId}")
+	public void deleteUser(@PathVariable long userId) {
+		Optional<User> optionalUser = userRepository.findById(userId);
+		if(!optionalUser.isPresent()) {
+			throw new ResourceNotFoundException("User by usedId: " + userId);
 		}
 		
 		User user = optionalUser.get();
 		if(user.getRole().equals("ROLE_" + SpringSecurityConfig.ADMIN)) {
 			throw new UnauthorizedRequestException("You can not delete an "+SpringSecurityConfig.ADMIN+" account!");
+		}
+		for(Ticket ticket : user.getSoldTickets()) {
+			ticket.setSoldBy(null);
+		}
+		for(Ticket ticket : user.getValidatedTickets()) {
+			ticket.setValidatedBy(null);
 		}
 		userRepository.delete(user);
 	}

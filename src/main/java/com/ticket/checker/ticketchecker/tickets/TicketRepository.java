@@ -13,6 +13,7 @@ public interface TicketRepository extends JpaRepository<Ticket, String>{
 	Long countByValidatedAtIsNull();
 	Page<Ticket> findByValidatedAtIsNotNullOrderByValidatedAtDesc(Pageable pageable);
 	Long countByValidatedAtIsNotNull();
+	Long countByTicketIdStartsWithIgnoreCaseOrSoldToStartsWithIgnoreCase(String ticketId, String soldTo);
 	Long countBySoldAtBetween(Date startDate, Date endDate);
 	Long countByValidatedAtBetween(Date startDate, Date endDate);
 }

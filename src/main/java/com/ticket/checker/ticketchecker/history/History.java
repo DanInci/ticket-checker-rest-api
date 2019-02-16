@@ -2,25 +2,30 @@ package com.ticket.checker.ticketchecker.history;
 
 import java.util.Date;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+import javax.persistence.*;
 
 @Entity
+@Table(name = "history")
 public class History {
 	
 	@Id
 	@GeneratedValue
-	private Long id;
-	
+    @Column(name = "history_id")
+    private Long historyId;
+
+	@Column(name = "time")
 	private Date time;
-	
+
+	@Column(name = "username")
 	private String username;
-	
+
+	@Column(name = "request_uri")
 	private String requestUri;
-	
+
+	@Column(name = "request_method")
 	private String requestMethod;
-	
+
+	@Column(name = "request_status")
 	private int responseStatus;
 	
 	public History() {}
@@ -35,11 +40,11 @@ public class History {
 	}
 
 	public Long getId() {
-		return id;
+		return historyId;
 	}
 
 	public void setId(Long id) {
-		this.id = id;
+		this.historyId = id;
 	}
 
 	public Date getTime() {

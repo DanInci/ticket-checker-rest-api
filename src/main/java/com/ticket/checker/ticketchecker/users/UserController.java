@@ -59,7 +59,7 @@ public class UserController {
 		if(type!=null && value != null) {
 			switch(type.toUpperCase()) {
 				case "ROLE": {
-					userList = userRepository.findByRoleOrderByCreatedDateDesc("ROLE_" + value.toUpperCase(), pageable).getContent();
+					userList = userRepository.findByRoleOrderByCreatedAtDesc("ROLE_" + value.toUpperCase(), pageable).getContent();
 					break;
 				}
 				case "SEARCH": {
@@ -69,7 +69,7 @@ public class UserController {
 			}
 		}
 		else {
-			userList = userRepository.findAllByOrderByCreatedDateDesc(pageable).getContent();
+			userList = userRepository.findAllByOrderByCreatedAtDesc(pageable).getContent();
 		}
 		return setUserFilter(userList);
 	}
@@ -120,7 +120,7 @@ public class UserController {
 			throw new UsernameExistsException("username-"+username);
 		}
 		
-		user.setCreatedDate(new Date());
+		user.setCreatedAt(new Date());
 		
 		String hashedUserPassword = SpringSecurityConfig.encoder().encode(password);
 		user.setPassword(hashedUserPassword);

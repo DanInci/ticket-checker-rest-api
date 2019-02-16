@@ -81,7 +81,7 @@ public class TicketController {
 	public ResponseEntity<MappingJacksonValue> createTicket(@RequestHeader("Authorization") String authorization, @Valid @RequestBody Ticket ticket) {
 		User soldBy = userUtil.getUserFromAuthorization(authorization);
 		
-		String ticketId = ticket.getTicketId();
+		String ticketId = ticket.getId();
 		Optional<Ticket> optional = ticketRepository.findById(ticketId);
 		if(optional.isPresent()) {
 			throw new TicketExistsException("Ticket " + ticketId + " already exists!");

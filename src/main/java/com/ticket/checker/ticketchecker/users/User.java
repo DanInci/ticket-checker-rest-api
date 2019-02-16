@@ -3,12 +3,7 @@ package com.ticket.checker.ticketchecker.users;
 import java.util.Date;
 import java.util.List;
 
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
-import javax.persistence.OrderBy;
+import javax.persistence.*;
 import javax.validation.constraints.Size;
 
 import com.fasterxml.jackson.annotation.JsonFilter;
@@ -17,46 +12,55 @@ import com.ticket.checker.ticketchecker.tickets.Ticket;
 
 @Entity
 @JsonFilter("UserFilter")
+@Table(name = "users")
 public class User {
 	
 	@Id
 	@GeneratedValue
-	private Long id;
-	
+    @Column(name = "user_id")
+	private Long userId;
+
+	@Column(name = "username")
 	@Size(min=3,max=255, message="Username must have at least 3 chars and as much as 255 chars")
 	private String username;
-	
-	private String password;
-	
+
+    @Column(name = "password")
+    private String password;
+
+    @Column(name = "name")
 	@Size(max=255, message="Name must have as much as 255 chars")
 	private String name;
-	
+
+    @Column(name = "role")
 	private String role;
+
+    @Column(name = "created_at")
+	private Date createdAt;
 	
-	private Date createdDate;
-	
-	@OneToMany(mappedBy="soldBy", fetch=FetchType.LAZY)
-	@OrderBy("soldAt desc")
+	@OneToMany(mappedBy = "soldBy", fetch=FetchType.LAZY)
+	@OrderBy("sold_at desc")
 	@JsonIgnore
 	private List<Ticket> soldTickets;
-	
+
+	@Column(name = "sold_tickets_no")
 	private int soldTicketsNo;
 	
-	@OneToMany(mappedBy="validatedBy", fetch=FetchType.LAZY)
-	@OrderBy("validatedAt desc")
+	@OneToMany(mappedBy = "validatedBy", fetch=FetchType.LAZY)
+	@OrderBy("validated_at desc")
 	@JsonIgnore
 	private List<Ticket> validatedTickets;
-	
+
+	@Column(name = "validated_tickets_no")
 	private int validatedTicketsNo;
 	
 	public User() {}
 
-	public User(String username, String password, String name, String role, Date createdDate, List<Ticket> soldTickets, List<Ticket> validatedTickets) {
+	public User(String username, String password, String name, String role, Date createdAt, List<Ticket> soldTickets, List<Ticket> validatedTickets) {
 		this.username = username;
 		this.password = password;
 		this.name = name;
 		this.role = role;
-		this.createdDate = createdDate;
+		this.createdAt = createdAt;
 		this.soldTickets = soldTickets;
 		this.soldTicketsNo = soldTickets.size();
 		this.validatedTickets = validatedTickets;
@@ -64,11 +68,11 @@ public class User {
 	}
 
 	public Long getId() {
-		return id;
+		return userId;
 	}
 
-	public void setId(Long id) {
-		this.id = id;
+	public void setId(Long userId) {
+		this.userId = userId;
 	}
 
 	public String getUsername() {
@@ -103,12 +107,12 @@ public class User {
 		this.role = role;
 	}
 
-	public Date getCreatedDate() {
-		return createdDate;
+	public Date getCreatedAt() {
+		return createdAt;
 	}
 
-	public void setCreatedDate(Date createdDate) {
-		this.createdDate = createdDate;
+	public void setCreatedAt(Date createdAt) {
+		this.createdAt = createdAt;
 	}
 	
 	public void setSoldTickets(List<Ticket> soldTickets) {

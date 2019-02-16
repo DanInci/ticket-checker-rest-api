@@ -2,9 +2,7 @@ package com.ticket.checker.ticketchecker.tickets;
 
 import java.util.Date;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
+import javax.persistence.*;
 import javax.validation.constraints.Size;
 
 import com.fasterxml.jackson.annotation.JsonFilter;
@@ -13,26 +11,31 @@ import com.ticket.checker.ticketchecker.users.User;
 
 @Entity
 @JsonFilter("TicketFilter")
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@Table(name = "tickets")
 public class Ticket {
 	
 	@Id
+    @Column(name = "ticket_id")
 	@Size(min=1, max=255, message="Ticked id must have at least 1 chars and as much as 255 chars")
 	private String ticketId;
-	
+
+	@Column(name = "sold_to")
 	@Size(max=255, message="Sold to must have as much as 255 chars")
 	private String soldTo;
-	
+
+	@Column(name = "sold_to_birthdate")
 	private Date soldToBirthdate;
-	
-	@ManyToOne
+
+	@ManyToOne(fetch = FetchType.EAGER, optional = false)
 	private User soldBy;
-	
+
+	@Column(name = "sold_at", nullable = false)
 	private Date soldAt;
-	
-	@ManyToOne
-	private User validatedBy;
-	
+
+	@ManyToOne(fetch = FetchType.EAGER)
+    private User validatedBy;
+
+	@Column(name = "validated_at")
 	private Date validatedAt;
 	
 	
@@ -49,11 +52,11 @@ public class Ticket {
 		this.validatedAt = validatedAt;
 	}
 
-	public String getTicketId() {
+	public String getId() {
 		return ticketId;
 	}
 
-	public void setTicketId(String ticketId) {
+	public void setId(String ticketId) {
 		this.ticketId = ticketId;
 	}
 	

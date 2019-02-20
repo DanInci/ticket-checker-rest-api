@@ -6,7 +6,6 @@ import javax.persistence.*;
 import javax.validation.constraints.Size;
 
 import com.fasterxml.jackson.annotation.JsonFilter;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.ticket.checker.ticketchecker.users.User;
 
 @Entity
@@ -26,6 +25,10 @@ public class Ticket {
 	@Column(name = "sold_to_birthdate")
 	private Date soldToBirthdate;
 
+	@Column(name = "telephone")
+	@Size(max=10, message="Telephone number must have 10 digits")
+	private String telephone;
+
 	@ManyToOne(fetch = FetchType.EAGER, optional = false)
 	private User soldBy;
 
@@ -41,11 +44,12 @@ public class Ticket {
 	
 	public Ticket() {}
 
-	public Ticket(String ticketId, String soldTo, Date soldToBirthdate, User soldBy, Date soldAt, User validatedBy, Date validatedAt) {
+	public Ticket(String ticketId, String soldTo, Date soldToBirthdate, String telephone, User soldBy, Date soldAt, User validatedBy, Date validatedAt) {
 		super();
 		this.ticketId = ticketId;
 		this.soldTo = soldTo;
 		this.soldToBirthdate = soldToBirthdate;
+		this.telephone = telephone;
 		this.soldBy = soldBy;
 		this.soldAt = soldAt;
 		this.validatedBy = validatedBy;
@@ -75,8 +79,16 @@ public class Ticket {
 	public void setSoldToBirthdate(Date soldToBirthdate) {
 		this.soldToBirthdate = soldToBirthdate;
 	}
-	
-	public User getSoldBy() {
+
+    public String getTelephone() {
+        return telephone;
+    }
+
+    public void setTelephone(String telephone) {
+        this.telephone = telephone;
+    }
+
+    public User getSoldBy() {
 		return soldBy;
 	}
 	

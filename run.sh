@@ -1,8 +1,5 @@
 #!/usr/bin/env bash
 
-# wrapper for docker-compose
-# all arguments are passed to docker-compose up
-
 set -eux -o pipefail
 
 cd "$(dirname "${BASH_SOURCE[0]}")"
@@ -31,6 +28,7 @@ trap clean exit
 "${RUN:-true}" || exit 0
 
 declare -a deps=(postgres)
+declare -a compose_args=(-f docker-compose.yml -f docker-compose-build.yml)
 
 test ${#deps[@]} -eq 0 || docker-compose pull "${deps[@]}"
 docker-compose build --pull

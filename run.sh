@@ -8,7 +8,7 @@ cd "$(dirname "${BASH_SOURCE[0]}")"
 function clean() {
     set +e
     if [ -z "${prog_args}" ] || [ -n "${prog_args/*-d*/}" ]; then
-        docker-compose down -v
+        docker-compose down
     fi
     docker image prune -f
 }
@@ -33,7 +33,7 @@ declare -a compose_args=(-f docker-compose.yml -f docker-compose-build.yml)
 test ${#deps[@]} -eq 0 || docker-compose pull "${deps[@]}"
 docker-compose build --pull
 if [ ${#} -gt 0 ]; then
-    docker-compose up -V "${@}"
+    docker-compose up "${@}"
 else
-    docker-compose up -V
+    docker-compose up
 fi

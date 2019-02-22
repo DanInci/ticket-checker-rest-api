@@ -181,7 +181,7 @@ public class UserController {
 	}
 	
 	public static SimpleBeanPropertyFilter getUserFilterProperty() {
-		SimpleBeanPropertyFilter filterProperty = SimpleBeanPropertyFilter.filterOutAllExcept("id","name","role","createdDate","soldTicketsNo","validatedTicketsNo");
+		SimpleBeanPropertyFilter filterProperty = SimpleBeanPropertyFilter.filterOutAllExcept("id","name","role","createdAt","soldTicketsNo","validatedTicketsNo");
 		return filterProperty;
 	}
 	

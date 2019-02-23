@@ -67,11 +67,11 @@ public class User {
 		this.validatedTicketsNo = validatedTickets.size();
 	}
 
-	public Long getId() {
+	public Long getUserId() {
 		return userId;
 	}
 
-	public void setId(Long userId) {
+	public void setUserId(Long userId) {
 		this.userId = userId;
 	}
 

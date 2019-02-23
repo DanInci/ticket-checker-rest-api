@@ -81,7 +81,7 @@ public class TicketController {
 	public ResponseEntity<MappingJacksonValue> createTicket(@RequestHeader("Authorization") String authorization, @Valid @RequestBody Ticket ticket) {
 		User soldBy = userUtil.getUserFromAuthorization(authorization);
 		
-		String ticketId = ticket.getId();
+		String ticketId = ticket.getTicketId();
 		Optional<Ticket> optional = ticketRepository.findById(ticketId);
 		if(optional.isPresent()) {
 			throw new TicketExistsException("Ticket " + ticketId + " already exists!");
@@ -170,7 +170,7 @@ public class TicketController {
 	
 	public static SimpleBeanPropertyFilter getTicketFilterProperty(boolean hideUserDetails) {
 		if(hideUserDetails) {
-			return SimpleBeanPropertyFilter.filterOutAllExcept("ticketId","soldTo","soldToBirthdate","soldAt","validatedAt");
+			return SimpleBeanPropertyFilter.filterOutAllExcept("ticketId","soldTo","soldToBirthdate","telephone","soldAt","validatedAt");
 		}
 		else {
 			return SimpleBeanPropertyFilter.serializeAll();

@@ -56,11 +56,11 @@ public class Ticket {
 		this.validatedAt = validatedAt;
 	}
 
-	public String getId() {
+	public String getTicketId() {
 		return ticketId;
 	}
 
-	public void setId(String ticketId) {
+	public void setTicketId(String ticketId) {
 		this.ticketId = ticketId;
 	}
 	

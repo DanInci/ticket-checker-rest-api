@@ -1,10 +1,12 @@
 package com.ticket.checker.ticketchecker.users;
 
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
+import javax.annotation.PostConstruct;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,10 +39,39 @@ public class UserController {
 	@Autowired
 	private UserRepository userRepository;
 	
-	@Autowired UserUtil util;
+	@Autowired
+	private UserUtil util;
 	
-	@Value("${application.name:Ticket Checker}")
+	@Value("${ticket.checker.application.name:Ticket Checker}")
 	private String appName;
+
+	@Value("${ticket.checker.admin.username:admin}")
+	private String adminUsername;
+
+	@Value("${ticket.checker.admin.password:admin}")
+	private String adminPassword;
+
+	@PostConstruct
+	public void init(){
+		Optional<User> maybeUser = userRepository.findByUsername(adminUsername);
+		if(!maybeUser.isPresent()) {
+			try {
+				User user = new User();
+				user.setCreatedAt(new Date());
+
+				String sha256EncryptedPass = util.encryptSha256(adminPassword);
+				String hashedUserPassword = SpringSecurityConfig.encoder().encode(sha256EncryptedPass);
+
+				user.setUsername(adminUsername);
+				user.setPassword(hashedUserPassword);
+				user.setSoldTicketsNo(0);
+				user.setValidatedTicketsNo(0);
+				user.setName("Administrator");
+				user.setRole("ROLE_" + SpringSecurityConfig.ADMIN);
+				userRepository.save(user);
+			} catch(NoSuchAlgorithmException ignored) { }
+		}
+	}
 	
 	@GetMapping(path="/")
 	public ResponseEntity<String> getConnectionDetails() {

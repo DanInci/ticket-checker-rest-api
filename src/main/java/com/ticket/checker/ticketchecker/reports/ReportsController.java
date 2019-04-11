@@ -18,7 +18,7 @@ import com.ticket.checker.ticketchecker.users.UserUtil;
 @RestController
 public class ReportsController {
 	
-	@Value("${reportsFolder:reports}")
+	@Value("${ticket.checker.reports.folder:reports}")
 	private String reportsFolderName;
 	
 	@Autowired

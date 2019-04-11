@@ -1,8 +1,13 @@
 package com.ticket.checker.ticketchecker.users;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
+import java.util.Date;
 import java.util.Optional;
 
+import com.ticket.checker.ticketchecker.security.SpringSecurityConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -13,7 +18,7 @@ public class UserUtil {
 	
 	@Autowired
 	private UserRepository userRepository;
-	
+
 	public User getUserFromAuthorization(String authHeader) {
 		String[] auth = authHeader.split(" ");
 		try {
@@ -87,6 +92,18 @@ public class UserUtil {
 			user.setValidatedTicketsNo(validatedTicketsNo);
 			userRepository.save(user);
 		}
+	}
+
+	public String encryptSha256(String toEncrypt) throws NoSuchAlgorithmException {
+		MessageDigest digest = MessageDigest.getInstance("SHA-256");
+		byte[] encodedhash = digest.digest(toEncrypt.getBytes(StandardCharsets.UTF_8));
+		StringBuilder hexString = new StringBuilder();
+		for (byte b : encodedhash) {
+			String hex = Integer.toHexString(0xff & b);
+			if (hex.length() == 1) hexString.append('0');
+			hexString.append(hex);
+		}
+		return hexString.toString().toUpperCase();
 	}
 
 }

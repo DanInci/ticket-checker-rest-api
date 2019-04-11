@@ -3,11 +3,13 @@ package com.ticket.checker.ticketchecker.statistics;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -23,7 +25,7 @@ public class StatisticsController {
 	
 	@Autowired
 	private TicketRepository ticketRepository;
-	
+
 	@GetMapping(path="/statistics/numbers/users")
 	public Long getUsersCount(@RequestParam(value="type", required=false) String type, @RequestParam(value="value", required=false) String value) {
 		Long usersNumbers = 0L;
@@ -72,34 +74,39 @@ public class StatisticsController {
 	}
 	
 	@GetMapping(path="/statistics/tickets")
-	public List<Statistic> getTicketsCount(@RequestParam(value="type", required=true) String type, @RequestParam(value="interval", required=true) String interval, 
-			@RequestParam(value="size", required=false) Integer size) {
-		size = (size == null || size > 15) ? 7 : size;
+	public List<Statistic> getTicketsCount(@RequestParam(value="type", required=true) String type, @RequestParam(value="interval", required=true) String interval,
+										   @RequestParam(value="size", required=false) Integer size, @RequestParam(value="from", required = false) @DateTimeFormat(pattern="yyyy-MM-dd HH:mm") Date from) {
+		size = (size == null || size > 24) ? 7 : size;
 		List<Statistic> statistics = new ArrayList<Statistic>();
 		if(interval.toUpperCase().equals("HOURLY")) {
-			statistics = getTicketsStatisticsForInterval(3600000L, type, size);
+			statistics = getTicketsStatisticsForInterval(3600000L, type, size, from);
 		}
 		else if(interval.toUpperCase().equals("DAILY")) {
-			statistics = getTicketsStatisticsForInterval(86400000L, type, size);
+			statistics = getTicketsStatisticsForInterval(86400000L, type, size, from);
 		}
 		else if(interval.toUpperCase().equals("WEEKLY")) {
-			statistics = getTicketsStatisticsForInterval(604800000L, type, size);
+			statistics = getTicketsStatisticsForInterval(604800000L, type, size, from);
 		}
 		return statistics;
 	}
 	
-	private List<Statistic> getTicketsStatisticsForInterval(Long interval, String type, int size) {
+	private List<Statistic> getTicketsStatisticsForInterval(Long interval, String type, int size, Date from) {
 		List<Statistic> statistics = new ArrayList<Statistic>();
 		Date beginDate = null;
-		if(interval != null && interval == 604800000L) {
-			LocalDate nowLocale = LocalDate.now();
-			LocalDate localDate = nowLocale.with(DayOfWeek.MONDAY);
-			beginDate = Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+		if(from != null) {
+			beginDate = from;
 		}
 		else {
-			Long now = System.currentTimeMillis();
-			Long roundedTime = now - (now % interval);
-			beginDate = new Date(roundedTime);
+			if(interval == 604800000L) {
+				LocalDate nowLocale = LocalDate.now();
+				LocalDate localDate = nowLocale.with(DayOfWeek.MONDAY);
+				beginDate = Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+			}
+			else {
+				Long now = System.currentTimeMillis();
+				Long roundedTime = now - (now % interval);
+				beginDate = new Date(roundedTime);
+			}
 		}
 		
 		Long startTime = beginDate.getTime() - size * interval;

@@ -27,10 +27,8 @@ trap clean exit
 
 "${RUN:-true}" || exit 0
 
-declare -a deps=(postgres)
 declare -a compose_args=(-f docker-compose.yml -f docker-compose-build.yml)
 
-test ${#deps[@]} -eq 0 || docker-compose pull "${deps[@]}"
 docker-compose build --pull
 if [ ${#} -gt 0 ]; then
     docker-compose up "${@}"
